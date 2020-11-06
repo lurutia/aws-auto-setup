@@ -9,7 +9,7 @@ AWS.config.update({region: process.env.REGION});
 const s3 = new AWS.S3({apiVersion: '2006-03-01'});
 
 // Create the parameters for calling createBucket
-var bucketParams = {
+const bucketParams = {
   Bucket : process.env.PROJECT_NAME+'-frontend'
 };
 

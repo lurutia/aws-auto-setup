@@ -2,25 +2,21 @@ import 'dotenv-safe/config';
 import AWS from 'aws-sdk';
 import runFn from '../utils/runFn';
 import logger from '../utils/loggers';
+import { getCertificateList } from './listCertification';
 
 // Set the region 
 AWS.config.update({region: process.env.REGION});
 
-var acm = new AWS.ACM({apiVersion: '2015-12-08'});
-var route53 = new AWS.Route53({apiVersion: '2013-04-01'});
+const acm = new AWS.ACM({apiVersion: '2015-12-08'});
+const route53 = new AWS.Route53({apiVersion: '2013-04-01'});
 
-// var ResourceRecordName;
-// var ResourceRecordValue;
-var ResourceRecordType = "CNAME";
-// var Route53Id;
+const ResourceRecordType = "CNAME";
 
-
-
-var describeAcmParams = {
+const describeAcmParams = {
     CertificateArn: "" /* required */
 };
 
-var recordSetParams = {
+const recordSetParams = {
     ChangeBatch: {
         Changes: [
             {
@@ -43,12 +39,12 @@ var recordSetParams = {
 };
 
 
-/* acm 인증서 요청 */
+/* acm 인증서 상세설명 불러오기 */
 const describeAcm = runFn(async () => {
     logger.info('----- start describe acm -----');
 
     /* 검증중인 acm 불러오기 */
-    const certificateList = await listCertificates("PENDING_VALIDATION");
+    const certificateList = await getCertificateList("PENDING_VALIDATION", process.env.REGION);
 
     /* 도메인명이랑 같은 acm 찾기 */
     const finder = certificateList.CertificateSummaryList.find(certificate => {
@@ -62,11 +58,9 @@ const describeAcm = runFn(async () => {
     /* acm 상세 명세 불러오기 */
     const data = await acm.describeCertificate(describeAcmParams).promise();
     // logger.info(data.Certificate.DomainValidationOptions);           // successful response
-    recordSetParams.ChangeBatch.Changes[0].ResourceRecordSet.Name = data.Certificate.DomainValidationOptions[0].ResourceRecord.Name;
-    recordSetParams.ChangeBatch.Changes[0].ResourceRecordSet.ResourceRecords[0].Value = data.Certificate.DomainValidationOptions[0].ResourceRecord.Value;
 
     logger.info('----- success describe acm -----');
-    // listRoute53HostedZones(); 
+    return data;
 });
 
 
@@ -93,20 +87,24 @@ export const listRoute53HostedZones = runFn(async () => {
         }
     */
     const hostedZoneId = findData.Id.split('/')[2];
-    recordSetParams.HostedZoneId = hostedZoneId;
 
     logger.info('----- success get route53 hosted zone list -----');
     return hostedZoneId;
-    // createRecordSets();
 })
 
 /* 호스팅 영역 세부 레코드 생성 */
 export const createAuthorizeRecordSets = runFn(async () => {
     logger.info('----- start authorize create record sets -----');
     /* acm 설명 */
-    await describeAcm();
+    const acmDescribeData = await describeAcm();
+    // console.log(acmDescribeData);
+    recordSetParams.ChangeBatch.Changes[0].ResourceRecordSet.Name = acmDescribeData.Certificate.DomainValidationOptions[0].ResourceRecord.Name;
+    recordSetParams.ChangeBatch.Changes[0].ResourceRecordSet.ResourceRecords[0].Value = acmDescribeData.Certificate.DomainValidationOptions[0].ResourceRecord.Value;
+
     /* route53 목록 불러오기 */
-    await listRoute53HostedZones();
+    const hostedZoneId = await listRoute53HostedZones();
+    recordSetParams.HostedZoneId = hostedZoneId;
+
     /* 레코드 생성 */
     await route53.changeResourceRecordSets(recordSetParams).promise();
     logger.info('----- success authorize create record sets -----');

@@ -39,7 +39,7 @@ const logger = winston.createLogger({
         new (winston.transports.Console)({
             name: 'debug-console',
             colorize: true,
-            level: 'debug',
+            level: 'info',
             showLevel: true,
             json: false,
             timestamp: tsFormat,

@@ -11,8 +11,8 @@ var ec2 = new AWS.EC2({apiVersion: '2016-11-15'});
 
 /* 가장 첫번째 VPC로 연결합니다 */
 var paramsIngress = {
-  GroupId: "",
-  IpPermissions:[
+GroupId: "",
+IpPermissions:[
     {
         IpProtocol: "tcp",
         FromPort: 80,
@@ -25,57 +25,67 @@ var paramsIngress = {
         ToPort: 22,
         IpRanges: [{"CidrIp":"0.0.0.0/0"}]
     }
-  ]
+]
 };
 
 var paramsSecurityGroup = {
-      Description: process.env.PROJECT_NAME,
-      GroupName: '',
-      VpcId: ""
+    Description: process.env.PROJECT_NAME,
+    GroupName: '',
+    VpcId: ""
 };
 
 // const describeVpcs = runFn(async () => {
 //   // Retrieve the ID of a VPC
 //   const data = await ec2.describeVpcs().promise();
 //   vpc = data.Vpcs[0].VpcId;
-  
+
 //   // Create the instance
 //   createSecurityGroup();
 // });
 
 /* 보안그룹 생성 */
 export const createSecurityGroup = runFn(async (GroupName) => {
-  logger.info('----- start create security group -----');
+    logger.info('----- start create security group -----');
 
-  /* vpc 불러오기 */
-  const vpc = await getFirstVpc();
+    /* vpc 불러오기 */
+    const vpc = await getFirstVpc();
 
-  /* vpcId, vpcGroupName 적용 */
-  paramsSecurityGroup.VpcId = vpc;
-  paramsSecurityGroup.GroupName = GroupName;
+    /* vpcId, vpcGroupName 적용 */
+    paramsSecurityGroup.VpcId = vpc;
+    paramsSecurityGroup.GroupName = GroupName;
 
-  /* 보안그룹 생성 */
-  const data = await ec2.createSecurityGroup(paramsSecurityGroup).promise();
+    /* 보안그룹 생성 */
+    const data = await ec2.createSecurityGroup(paramsSecurityGroup).promise();
 
-  /* 인바운드 규칙 추가 할 id */
-  var SecurityGroupId = data.GroupId;
-  paramsIngress.GroupId = SecurityGroupId;
+    /* 인바운드 규칙 추가 할 id */
+    const securityGroupId = data.GroupId;
 
-  logger.info('----- success create security group -----');
-  // logger.info("Success", SecurityGroupId);
-  
-  authorizeSecurityGroupIngress();
+    logger.info('----- success create security group -----');
+    
+    return securityGroupId;
+    // logger.info("Success", SecurityGroupId);
+
+    // await authorizeSecurityGroupIngress(securityGroupId);
 });
 
 
 /* 인바운드 규칙 추가 */
-const authorizeSecurityGroupIngress = runFn(async () => {
-  logger.info('----- start authorize group ingress -----');
+export const authorizeSecurityGroupIngress = runFn(async (securityGroupId) => {
+    logger.info('----- start authorize group ingress -----');
 
-  /* 규칙 추가 */
-  const data = await ec2.authorizeSecurityGroupIngress(paramsIngress).promise();
-  // logger.info("Ingress Successfully Set", data);
-  logger.info('----- success authorize group ingress -----');
+
+    paramsIngress.GroupId = securityGroupId;
+
+    /* 규칙 추가 */
+    const data = await ec2.authorizeSecurityGroupIngress(paramsIngress).promise();
+    // logger.info("Ingress Successfully Set", data);
+    logger.info('----- success authorize group ingress -----');
+
+    return data;
 });
 
 // describeVpcs();
+
+const getSecurityGroup = runFn(async () => {
+
+});

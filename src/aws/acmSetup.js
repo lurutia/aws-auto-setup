@@ -35,10 +35,8 @@ var params = {
 /* certificate manager 생성 */
 export const createAcm = runFn(async (region) => {
     logger.info('----- start create AmazonCertificateManager -----');
-    
     //지역 설정 
     AWS.config.update({region}); 
-    
     const acm = new AWS.ACM({apiVersion: '2015-12-08'}); 
 
     //acm 생성

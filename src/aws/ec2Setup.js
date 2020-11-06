@@ -5,15 +5,13 @@ import logger from '../utils/loggers';
 
 AWS.config.update({region: process.env.REGION})
 
-var ec2 = new AWS.EC2({ apiVersion: '2016-11-15'});
+const ec2 = new AWS.EC2({ apiVersion: '2016-11-15'});
 
-var securityGroupId = 'sg-001230d322e193c66';
-
-
+// const securityGroupId = 'sg-001230d322e193c66';
 const ec2RunInstanceParam = {
     KeyName: process.env.PROJECT_NAME+'_key_pair',
     SecurityGroupIds: [
-        securityGroupId,
+        // sg-001230d322e193c66
     ],
     MaxCount: 1,
     MinCount: 1,
@@ -45,20 +43,26 @@ const ec2RunInstanceParam = {
 }
 
 /* ec2 인스턴스 시작 */
-const ec2RunInstances = runFn(async () => {
+export const ec2RunInstances = runFn(async (securityGroupId) => {
+    logger.info('----- start ec2 run Instance -----');
+    
     /* ec2 인스턴스 시작 */
+    ec2RunInstanceParam.SecurityGroupIds.push(securityGroupId);
     const data = await ec2.runInstances(ec2RunInstanceParam).promise();
+
+    logger.info('----- success ec2 run Instance -----');
+    return data;
 })
 
 // ec2RunInstances();
 
 
 /* 인스턴스 목록 불러오기 */
-const ec2DescribeInstances = runFn(async () => {
-    const data = await ec2.describeInstances({}).promise();
+// const ec2DescribeInstances = runFn(async () => {
+//     const data = await ec2.describeInstances({}).promise();
 
-    /* 불러온 인스턴스 중 동일한 인스턴스 찾기 */
-    data.Reservations.forEach(elm => logger.info(elm.Instances));
-});
+//     /* 불러온 인스턴스 중 동일한 인스턴스 찾기 */
+//     data.Reservations.forEach(elm => logger.info(elm.Instances));
+// });
 
 // ec2DescribeInstances();

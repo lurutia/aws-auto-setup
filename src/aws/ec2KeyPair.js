@@ -6,9 +6,9 @@ import logger from '../utils/loggers';
 AWS.config.update({region: process.env.REGION});
 
 // Create EC2 service object
-var ec2 = new AWS.EC2({apiVersion: '2016-11-15'});
+const ec2 = new AWS.EC2({apiVersion: '2016-11-15'});
 
-var params = {
+const params = {
    /* 키페어 이름 설정 */
    KeyName: process.env.PROJECT_NAME+'_key_pair'
 };
