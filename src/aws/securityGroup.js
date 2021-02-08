@@ -34,15 +34,6 @@ var paramsSecurityGroup = {
     VpcId: ""
 };
 
-// const describeVpcs = runFn(async () => {
-//   // Retrieve the ID of a VPC
-//   const data = await ec2.describeVpcs().promise();
-//   vpc = data.Vpcs[0].VpcId;
-
-//   // Create the instance
-//   createSecurityGroup();
-// });
-
 /* 보안그룹 생성 */
 export const createSecurityGroup = runFn(async (GroupName) => {
     logger.info('----- start create security group -----');
@@ -63,8 +54,6 @@ export const createSecurityGroup = runFn(async (GroupName) => {
     logger.info('----- success create security group -----');
     
     return securityGroupId;
-    // logger.info("Success", SecurityGroupId);
-
     // await authorizeSecurityGroupIngress(securityGroupId);
 });
 

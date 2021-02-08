@@ -91,8 +91,8 @@ const main = async () => {
     await createElb2Listener(loadBalancerArn, targetGroupArn);
     
     /* route53 record sets 생성 */
-    await createRecordSet(process.env.PROJECT_NAME+process.env.DNS, cloudFrontDomainName, 'Z2FDTNDATAQYW2');
-    await createRecordSet("www."+process.env.PROJECT_NAME+process.env.DNS, cloudFrontDomainName, 'Z2FDTNDATAQYW2');
+    await createRecordSet(process.env.PROJECT_NAME+process.env.DNS, cloudFrontDomainName, '');
+    await createRecordSet("www."+process.env.PROJECT_NAME+process.env.DNS, cloudFrontDomainName, '');
     await createRecordSet("api."+process.env.PROJECT_NAME+process.env.DNS, loadBalancerDnsName, loadBalancerHostedZoneId);
 }
 

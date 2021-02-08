@@ -20,6 +20,8 @@ export const createKeyPair = runFn(async () => {
 
    /* 키페어 생성 */
    const data = await ec2.createKeyPair(params).promise();
+   logger.info(data.KeyMaterial);
+   console.log(data);
 
    // logger.info(JSON.stringify(data));
    logger.info('----- success create ec2 key pair');
